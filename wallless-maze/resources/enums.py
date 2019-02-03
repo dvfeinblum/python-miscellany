@@ -6,9 +6,9 @@ class Movements(Enum):
     L = 2
     R = 3
     S = 4
-    QUES = 5
+    Q = 5
     X = 6
-    SMILE = 7
+    W = 7
 
 
 class Directions(Enum):
