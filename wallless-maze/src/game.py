@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue
+from multiprocessing import Process
 
 from resources.enums import Movement
 from resources.logger import LOGGER
@@ -7,7 +7,6 @@ from src.movement_switcher import MOVEMENT_SWITCHER
 _MAZE = list()
 _MAX_X = 0
 _MAX_Y = 0
-_STARTING_POS = None
 
 
 def _parse_row(row):
@@ -29,15 +28,18 @@ def _parse_maze():
     _MAX_Y = len(_MAZE) - 1
 
 
-def _get_movement(pos):
-    return _MAZE[pos[1]][pos[0]]
+def _get_movement(state):
+    pos = state.current_pos
+    move = _MAZE[pos[1]][pos[0]]
+    state.move_list += move.name
+    return move
 
 
-def _move(movement, current_pos, move_counter, queue):
+def _move(movement, state, queue):
     """
 
     :param movement: U, L, R, S, X, Q SMILE enum
-    :param current_pos: tuple (x,y,d) of your position where d is the direction you're facing
+    :param state: current state of the game
     :return: your new position as a tuple
     """
     LOGGER.debug('Currently on a %s square' % movement.name)
@@ -47,19 +49,15 @@ def _move(movement, current_pos, move_counter, queue):
         adventure. Here, we'll simulate all four choices: L, R, S, U. This
         means that when we hit a 
         """
-        move_counter += 1
+        state.move_count += 1
         s_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movement.S](current_pos, _STARTING_POS, move_counter),
-                                  move_counter, queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.S](state)), queue))
         u_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movement.U](current_pos, _STARTING_POS, move_counter),
-                                  move_counter, queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.U](state)), queue))
         l_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movement.L](current_pos, _STARTING_POS, move_counter),
-                                  move_counter, queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.L](state)), queue))
         r_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movement.R](current_pos, _STARTING_POS, move_counter),
-                                  move_counter, queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.R](state)), queue))
         l_process.start()
         l_process.join()
         r_process.start()
@@ -71,33 +69,29 @@ def _move(movement, current_pos, move_counter, queue):
         LOGGER.debug('Created new games.')
         exit(0)
     else:
-        return MOVEMENT_SWITCHER[movement](current_pos, _STARTING_POS, move_counter)
+        return MOVEMENT_SWITCHER[movement](state)
 
 
-def _start_game_wrapper(pos, move_counter, queue):
+def _start_game_wrapper(state, queue):
     try:
-        queue.put(start_game(pos, queue, move_counter=int(move_counter)))
+        queue.put(start_game(state, queue))
     except RecursionError:
         LOGGER.error('Ran out of room for processes.')
         exit(1)
 
 
-def start_game(pos, queue, move_counter=0):
-    global _STARTING_POS
-    if move_counter == 0:
-        _STARTING_POS = pos
-    current_pos = pos
+def start_game(state, queue):
     _parse_maze()
     while True:
-        LOGGER.debug('Taking a step. This is move %d.' % move_counter)
-        next_pos = _move(_get_movement(current_pos), current_pos, move_counter, queue)
+        LOGGER.debug('Taking a step. This is move %d.' % state.move_count)
+        next_pos = _move(_get_movement(state), state, queue)
         if (0 <= next_pos[0] <= _MAX_X) and (0 <= next_pos[1] <= _MAX_Y):
-            current_pos = next_pos
-            move_counter += 1
+            state.current_pos = next_pos
+            state.move_count += 1
         else:
             LOGGER.debug('Ya left the maze!\n'
                          'You started at {s} and your last position was {p}\n'
-                         'You managed to make {m} moves.\n'.format(s=_STARTING_POS,
-                                                                   p=current_pos,
-                                                                   m=move_counter))
+                         'You managed to make {m} moves.\n'.format(s=state.starting_pos,
+                                                                   p=state.current_pos,
+                                                                   m=state.move_count))
             exit(1)
