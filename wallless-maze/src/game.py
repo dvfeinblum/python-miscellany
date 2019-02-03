@@ -1,6 +1,6 @@
 from multiprocessing import Process, Queue
 
-from resources.enums import Movements
+from resources.enums import Movement
 from resources.logger import LOGGER
 from src.movement_switcher import MOVEMENT_SWITCHER
 
@@ -11,7 +11,7 @@ _STARTING_POS = None
 
 
 def _parse_row(row):
-    return [Movements[movement] for movement in row.replace('\n', '').split(' ')]
+    return [Movement[movement] for movement in row.replace('\n', '').split(' ')]
 
 
 def _parse_maze():
@@ -33,7 +33,7 @@ def _get_movement(pos):
     return _MAZE[pos[1]][pos[0]]
 
 
-def _move(movement, current_pos, move_counter):
+def _move(movement, current_pos, move_counter, queue):
     """
 
     :param movement: U, L, R, S, X, Q SMILE enum
@@ -41,24 +41,24 @@ def _move(movement, current_pos, move_counter):
     :return: your new position as a tuple
     """
     LOGGER.debug('Currently on a %s square' % movement.name)
-    if movement == Movements.Q:
+    if movement == Movement.Q:
         """
         If we land on a question block, this turns into a choose-your-own
         adventure. Here, we'll simulate all four choices: L, R, S, U. This
         means that when we hit a 
         """
-        queue = Queue()
+        move_counter += 1
         s_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movements.S](current_pos, _STARTING_POS, move_counter),
+                            args=(MOVEMENT_SWITCHER[Movement.S](current_pos, _STARTING_POS, move_counter),
                                   move_counter, queue))
         u_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movements.U](current_pos, _STARTING_POS, move_counter),
+                            args=(MOVEMENT_SWITCHER[Movement.U](current_pos, _STARTING_POS, move_counter),
                                   move_counter, queue))
         l_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movements.L](current_pos, _STARTING_POS, move_counter),
+                            args=(MOVEMENT_SWITCHER[Movement.L](current_pos, _STARTING_POS, move_counter),
                                   move_counter, queue))
         r_process = Process(target=_start_game_wrapper,
-                            args=(MOVEMENT_SWITCHER[Movements.R](current_pos, _STARTING_POS, move_counter),
+                            args=(MOVEMENT_SWITCHER[Movement.R](current_pos, _STARTING_POS, move_counter),
                                   move_counter, queue))
         l_process.start()
         l_process.join()
@@ -76,13 +76,13 @@ def _move(movement, current_pos, move_counter):
 
 def _start_game_wrapper(pos, move_counter, queue):
     try:
-        queue.put(start_game(pos, move_counter=int(move_counter)))
+        queue.put(start_game(pos, queue, move_counter=int(move_counter)))
     except RecursionError:
         LOGGER.error('Ran out of room for processes.')
         exit(1)
 
 
-def start_game(pos, move_counter=0):
+def start_game(pos, queue, move_counter=0):
     global _STARTING_POS
     if move_counter == 0:
         _STARTING_POS = pos
@@ -90,7 +90,7 @@ def start_game(pos, move_counter=0):
     _parse_maze()
     while True:
         LOGGER.debug('Taking a step. This is move %d.' % move_counter)
-        next_pos = _move(_get_movement(current_pos), current_pos, move_counter)
+        next_pos = _move(_get_movement(current_pos), current_pos, move_counter, queue)
         if (0 <= next_pos[0] <= _MAX_X) and (0 <= next_pos[1] <= _MAX_Y):
             current_pos = next_pos
             move_counter += 1
