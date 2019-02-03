@@ -51,13 +51,17 @@ def _move(movement, state, queue):
         """
         state.move_count += 1
         s_process = Process(target=_start_game_wrapper,
-                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.S](state)), queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.S](state),
+                                                    move=Movement.S.name), queue))
         u_process = Process(target=_start_game_wrapper,
-                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.U](state)), queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.U](state),
+                                                    move=Movement.U.name), queue))
         l_process = Process(target=_start_game_wrapper,
-                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.L](state)), queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.L](state),
+                                                    move=Movement.L.name), queue))
         r_process = Process(target=_start_game_wrapper,
-                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.R](state)), queue))
+                            args=(state.clone_state(current_pos=MOVEMENT_SWITCHER[Movement.R](state),
+                                                    move=Movement.R.name), queue))
         l_process.start()
         l_process.join()
         r_process.start()
