@@ -2,6 +2,17 @@ Fun puzzle from 538:
 
 https://fivethirtyeight.com/features/can-you-escape-a-maze-without-walls/
 
+TLDR:
+```bash
+INFO:Game Logger:*** A WINNER IS YOU ***
+Move Count: 37
+Move List: LULLULLULRLURRRURLSSLSLLRRSUSRRRSLLULW
+Starting Position: (3, 0, <Direction.SOUTH: 2>)
+```
+
+Note that `y` increases from top to bottom. 
+There are a couple other starting points on the perimiter that work but this one got me the shortest move count.
+
 Introduction
 ============
 This program navigates a maze consisting of NxN tiles (though in principle, this'll work with any shape [I think?]).
