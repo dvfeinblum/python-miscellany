@@ -11,7 +11,7 @@ Starting Position: (3, 0, <Direction.SOUTH: 2>)
 ```
 
 Note that `y` increases from top to bottom. 
-There are a couple other starting points on the perimiter that work but this one got me the shortest move count.
+There are a couple other starting points on the perimeter that work but this one got me the shortest move count.
 
 Introduction
 ============
