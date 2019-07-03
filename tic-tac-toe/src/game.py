@@ -12,7 +12,7 @@ class Game:
             self.player = 'O'
             self.cpu = 'X'
             self.is_player_turn = False
-        self.board = [['-'] * 3] * 3
+        self.board = [['-', '-', '-'], ['-', '-', '-'], ['-', '-', '-']]
         self.is_complete = False
         self.move_count = 0
 
@@ -23,9 +23,7 @@ class Game:
     def _calculate_cpu_move(self):
         x, y = (randint(0, 2), randint(0, 2))
         if self.board[y][x] == '-':
-            new_row = self.board[y].copy()
-            new_row[x] = self.cpu
-            self.board[y] = new_row
+            self.board[y][x] = self.cpu
         else:
             self._calculate_cpu_move()
         self.is_player_turn = True
@@ -35,16 +33,14 @@ class Game:
         if x > 2 or y > 2:
             self._player_move(eval(input('Invalid move! Remember that x and y must be less than 2.')))
         if self.board[y][x] == '-':
-            new_row = self.board[y].copy()
-            new_row[x] = self.player
-            self.board[y] = new_row
+            self.board[y][x] = self.player
         else:
             self._player_move(eval(input('That square is already taken! Try another one:')))
         self.is_player_turn = False
 
     def _check_game(self):
-        player_won_diagonal = []
-        cpu_won_diagonal = []
+        player_won_diagonal = [[], []]
+        cpu_won_diagonal = [[], []]
         for i in range(3):
             player_won_down = []
             cpu_won_down = []
@@ -65,12 +61,14 @@ class Game:
                 return 'CPU'
 
             # Checks diagonal
-            player_won_diagonal.append(self.board[i][i] == self.player)
-            cpu_won_diagonal.append(self.board[i][i] == self.cpu)
+            player_won_diagonal[0].append(self.board[i][i] == self.player)
+            player_won_diagonal[1].append(self.board[i][2-i] == self.player)
+            cpu_won_diagonal[0].append(self.board[i][i] == self.cpu)
+            cpu_won_diagonal[1].append(self.board[i][2-i] == self.cpu)
 
-        if all(player_won_diagonal):
+        if all(player_won_diagonal[0]) or all(player_won_diagonal[1]):
             return 'Player'
-        elif all(cpu_won_diagonal):
+        elif all(cpu_won_diagonal[0] or all(cpu_won_diagonal[1])):
             return 'CPU'
 
     def play_turn(self):
