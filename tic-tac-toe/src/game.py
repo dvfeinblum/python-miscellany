@@ -21,7 +21,7 @@ class Game:
             print(''.join(row))
 
     def _calculate_cpu_move(self):
-        x, y = (randint(0, 2), randint(0, 2))
+        x, y = (1, 1) if self.move_count < 2 else (randint(0, 2), randint(0, 2))
         if self.board[y][x] == '-':
             self.board[y][x] = self.cpu
         else:
