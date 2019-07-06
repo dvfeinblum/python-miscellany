@@ -94,3 +94,7 @@ def start_game():
     print('Starting a new game!')
     while not game.is_complete:
         game.play_turn()
+    if input('Would you like to play again (y,n)?').lower() == 'y':
+        start_game()
+    else:
+        exit()
