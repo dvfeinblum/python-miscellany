@@ -6,5 +6,5 @@ setup(
    description='bot that watches your screen and plays Tallest Tree for you.',
    author='Dave Feinblum',
    author_email='me@dvfeinblum.com',
-   install_requires=['keyboard', 'mss', 'numpy', 'opencv-python', 'Pillow'],
+   install_requires=['keyboard', 'mss', 'numpy', 'Pillow'],
 )

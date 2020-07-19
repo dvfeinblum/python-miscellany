@@ -1,6 +1,5 @@
 import time
 
-import cv2
 from keyboard import press_and_release
 import mss
 import numpy as np
@@ -25,31 +24,41 @@ def should_press_space(img_arr: np.array):
     return False
 
 
+def debug_menu():
+    """
+    Optional function you can throw in the while loop below
+    to watch all sorts of neat things that helped me with timing.
+    """
+    import cv2
+
+    cv2.imshow("OpenCV/Numpy normal", img)
+    if drop_cnt % 5 == 0:
+        print(f"Current FPS: {1 / (time.time() - last_time)}")
+        print(f"Current RGB at 0th pixel: {img[0]}")
+        print(f"Current sleep time: {dynamic_timer} seconds")
+
+
 with mss.mss() as sct:
-    # Part of the screen to capture
+    # Part of the screen to capture; note that this not might work on your computer
     monitor = {"top": 197, "left": 767, "width": 1, "height": 180}
-    cnt = 0
+    drop_cnt = 0
+
+    # The logs speed up over time so we need to sleep less as we drop
+    dynamic_timer = 1.8
+    sleep_timers = {0: 1.47,
+                    1: 1.65,
+                    2: 4.15}
 
     while "Screen capturing":
-        cnt += 1
         last_time = time.time()
 
-        # Get raw pixels from the screen, save it to a Numpy array
+        # debug_menu()
+
         img = np.array(sct.grab(monitor))
 
         if should_press_space(img):
             print("Dropping log!")
             press_and_release("space")
-            time.sleep(1.77)
-
-        if cnt % 100 == 0:
-            print(f"Current FPS: {1 / (time.time() - last_time)}")
-            print(f"Current RGB at 0th pixel: {img[0]}")
-
-        # # Display the picture
-        # cv2.imshow("OpenCV/Numpy normal", img)
-
-        # Press "q" to quit
-        if cv2.waitKey(25) & 0xFF == ord("q"):
-            cv2.destroyAllWindows()
-            break
+            time.sleep(sleep_timers.get(drop_cnt, dynamic_timer))
+            drop_cnt += 1
+            dynamic_timer *= 0.99
