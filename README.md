@@ -8,3 +8,7 @@ Interesing Riddler problem from [FiveThirtyEight](https://fivethirtyeight.com/fe
 Tic Tac Toe
 -----------
 Simple tic tac toe program.
+
+Tallest Tree Bot
+----------------
+Little script I wrote that plays [Tallest Tree](https://legiongames.itch.io/tallest-tree) for you.
