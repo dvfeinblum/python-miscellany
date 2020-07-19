@@ -12,7 +12,7 @@ def should_press_space(img_arr: np.array):
     """
     We look at a sliver of pixels and if there's any color
     that doesn't match the background, we know it's the right
-    frame to drop the block.
+    frame to drop the block. Yes; this method is hideously slow and could be improved.
 
     :param img_arr: numpy array of the screenshot
     :return: bool indicating if it's time to drop the log
@@ -32,7 +32,7 @@ def debug_menu():
     import cv2
 
     cv2.imshow("OpenCV/Numpy normal", img)
-    if drop_cnt % 5 == 0:
+    if drop_cnt % 3 == 0:
         print(f"Current FPS: {1 / (time.time() - last_time)}")
         print(f"Current RGB at 0th pixel: {img[0]}")
         print(f"Current sleep time: {dynamic_timer} seconds")
